@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Gate Check - Simple Version</title>
+<style>
+  /* ---------- Basic look ---------- */
+  body { font-family: Arial, sans-serif; background: #eef0f3; color: #14213d; margin: 0; }
+  header { background: #14213d; color: #fff; padding: 14px 20px; border-bottom: 6px solid #f2a900; }
+  header h1 { margin: 0; font-size: 1.2rem; }
+  nav { padding: 12px 16px 0; }
+  nav button { padding: 10px 16px; border: 1px solid #ccc; background: #ddd; cursor: pointer; font-size: 1rem; }
+  nav button.active { background: #fff; font-weight: bold; border-top: 3px solid #f2a900; }
+  main { background: #fff; margin: 0 16px 24px; padding: 20px; max-width: 900px; border: 1px solid #ccc; }
+  .tab { display: none; }
+  .tab.show { display: block; }
+  input, select { padding: 10px; font-size: 1rem; width: 100%; box-sizing: border-box; margin: 4px 0 12px; }
+  button.go { padding: 10px 18px; font-size: 1rem; background: #14213d; color: #fff; border: 0; cursor: pointer; }
+  table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+  th, td { text-align: left; padding: 8px; border-bottom: 1px solid #ddd; }
+  .result { padding: 24px; border-radius: 8px; margin-top: 14px; font-size: 1.1rem; background: #eee; }
+  .result h2 { margin: 0 0 8px; }
+  .good { background: #dff3ea; color: #0f5c40; }   /* green: valid */
+  .bad  { background: #fbe3e1; color: #9b211b; }   /* red: not registered */
+  .warn { background: #fff1cc; color: #7a5200; }   /* yellow: already scanned */
+  .card { display: inline-block; width: 230px; border: 1px solid #ccc; padding: 10px; margin: 0 10px 10px 0; vertical-align: top; }
+  .small { color: #555; font-size: .9rem; }
+</style>
+</head>
+<body>
+
+<header><h1>Gate Check: Student ID Verification</h1></header>
+
+<nav>
+  <button class="active" data-tab="scanTab">Gate scanner</button>
+  <button data-tab="logTab">Attendance</button>
+  <button data-tab="adminTab">Admin</button>
+</nav>
+
+<main>
+
+  <!-- TAB 1: the guard scans here -->
+  <section class="tab show" id="scanTab">
+    <label for="scanBox"><b>Scan student ID</b></label>
+    <input id="scanBox" autocomplete="off" placeholder="Scan or type the ID number, then press Enter">
+    <p class="small">For now, type the ID number and press Enter. To test, use a registered ID (like 2026-0001).</p>
+    <div class="result" id="result">Waiting for the next student.</div>
+  </section>
+
+  <!-- TAB 2: attendance, parent messages, and alerts -->
+  <section class="tab" id="logTab">
+    <h3>Today's arrivals</h3>
+    <div id="attendanceTable"></div>
+    <h3>Messages sent to parents</h3>
+    <div id="messageTable"></div>
+    <h3>Alerts for the guard and administrator</h3>
+    <div id="alertTable"></div>
+  </section>
+
+  <!-- TAB 3: admin registers and removes people -->
+  <section class="tab" id="adminTab">
+    <div id="loginBox">
+      <h3>Administrator sign-in</h3>
+      <label for="pinBox">Admin PIN</label>
+      <input id="pinBox" type="password" style="max-width:260px">
+      <button class="go" id="loginBtn">Sign in</button>
+      <p class="small" id="pinMsg">Default PIN: 1234</p>
+    </div>
+
+    <div id="adminBox" style="display:none">
+      <h3>Register a person</h3>
+      <label>Type</label>
+      <select id="fType"><option value="student">Student</option><option value="staff">Staff</option></select>
+      <label>ID number (digits and hyphens)</label>
+      <input id="fId" placeholder="2026-0004">
+      <label>Full name</label>
+      <input id="fName">
+      <label>Grade / section (or staff position)</label>
+      <input id="fGrade">
+      <label>Parent or guardian name (students only)</label>
+      <input id="fParent">
+      <label>Mobile number (parent's for students)</label>
+      <input id="fPhone" placeholder="0917 000 0000">
+      <button class="go" id="saveBtn">Save</button>
+
+      <h3>Registered people</h3>
+      <div id="peopleList"></div>
+    </div>
+  </section>
+
+</main>
+
+<script>
+/* ============================================================
+   1. DATA  (saved in the browser with localStorage)
+   ============================================================ */
+const ADMIN_PIN = "1234";   // change this to your own PIN
+
+// A few sample people so the system works right away
+const SAMPLE_PEOPLE = [
+  { type: "student", id: "2026-0001", name: "Maria Santos",   grade: "Grade 10 - Rizal",  parent: "Elena Santos", phone: "0917 111 2233" },
+  { type: "student", id: "2026-0002", name: "Juan Dela Cruz", grade: "Grade 8 - Bonifacio", parent: "Pedro Dela Cruz", phone: "0918 444 5566" },
+  { type: "staff",   id: "7001-001",  name: "Rosa Mendoza",   grade: "Teacher, Mathematics", parent: "", phone: "0920 123 4567" }
+];
+
+// Load saved data, or use the starting values if nothing is saved yet
+function load(key, fallback) {
+  const saved = localStorage.getItem(key);
+  return saved ? JSON.parse(saved) : fallback;
+}
+let people     = load("people", SAMPLE_PEOPLE);
+let attendance = load("attendance", []);
+let messages   = load("messages", []);
+let alerts     = load("alerts", []);
+
+function saveAll() {
+  localStorage.setItem("people", JSON.stringify(people));
+  localStorage.setItem("attendance", JSON.stringify(attendance));
+  localStorage.setItem("messages", JSON.stringify(messages));
+  localStorage.setItem("alerts", JSON.stringify(alerts));
+}
+
+/* ============================================================
+   2. SMALL HELPER FUNCTIONS
+   ============================================================ */
+const $ = id => document.getElementById(id);
+const timeText = ms => new Date(ms).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
+const dayText  = ms => new Date(ms).toDateString();
+
+// Stops names from breaking the page (security habit: never put raw text in HTML)
+function safe(text) {
+  const div = document.createElement("div");
+  div.textContent = text;
+  return div.innerHTML;
+}
+
+/* ============================================================
+   3. THE SCANNER  (the main idea of the whole project)
+   ============================================================ */
+function showResult(style, title, lines) {
+  $("result").className = "result " + style;
+  $("result").innerHTML = "<h2>" + title + "</h2>" + lines.map(safe).join("<br>");
+}
+
+function handleScan(code) {
+  const now = Date.now();
+  const person = people.find(p => p.id === code);
+
+  // Case 1: the ID is not in the system
+  if (!person) {
+    alerts.unshift({ time: now, code: code, problem: "Not registered" });
+    showResult("bad", "Invalid ID. Do not admit.", ["Scanned: " + code, "Guard and administrator alerted."]);
+  }
+  else {
+    // Case 2: this person already scanned today
+    const already = attendance.find(a => a.id === person.id && dayText(a.time) === dayText(now));
+    if (already) {
+      alerts.unshift({ time: now, code: code, problem: "Already checked in" });
+      showResult("warn", "Already checked in today", [person.name, "First scan: " + timeText(already.time)]);
+    }
+    // Case 3: valid, first scan today
+    else {
+      attendance.unshift({ time: now, id: person.id, name: person.name, grade: person.grade, type: person.type });
+      if (person.type === "student") {
+        // Parent notification (simulated: it is only logged on screen)
+        const text = "Good day, " + person.parent + ". " + person.name + " (" + person.grade + ") safely entered the campus at " + timeText(now) + ".";
+        messages.unshift({ time: now, to: person.parent, phone: person.phone, text: text });
+        showResult("good", "Valid ID. Welcome in.", [person.name, person.grade, "Parent notified: " + person.parent]);
+      } else {
+        showResult("good", "Staff verified. Welcome in.", [person.name, person.grade]);
+      }
+    }
+  }
+  saveAll();
+  drawTables();
+}
+
+$("scanBox").addEventListener("keydown", function (e) {
+  if (e.key === "Enter") {
+    const code = this.value.trim();
+    this.value = "";
+    if (code) handleScan(code);
+  }
+});
+
+/* ============================================================
+   4. TABLES (attendance, messages, alerts)
+   ============================================================ */
+function makeTable(headings, rows, emptyText) {
+  if (rows.length === 0) return "<p class='small'>" + emptyText + "</p>";
+  const head = "<tr>" + headings.map(h => "<th>" + h + "</th>").join("") + "</tr>";
+  return "<table>" + head + rows.join("") + "</table>";
+}
+
+function drawTables() {
+  const today = attendance.filter(a => dayText(a.time) === dayText(Date.now()));
+  $("attendanceTable").innerHTML = makeTable(
+    ["Time", "Name", "Type", "Grade / position"],
+    today.map(a => "<tr><td>" + timeText(a.time) + "</td><td>" + safe(a.name) + "</td><td>" + a.type + "</td><td>" + safe(a.grade) + "</td></tr>"),
+    "No arrivals yet today.");
+
+  $("messageTable").innerHTML = makeTable(
+    ["Time", "To", "Message"],
+    messages.map(m => "<tr><td>" + timeText(m.time) + "</td><td>" + safe(m.to) + "<br><span class='small'>" + safe(m.phone) + "</span></td><td>" + safe(m.text) + "</td></tr>"),
+    "No messages sent yet.");
+
+  $("alertTable").innerHTML = makeTable(
+    ["Time", "Scanned ID", "Problem"],
+    alerts.map(a => "<tr><td>" + timeText(a.time) + "</td><td>" + safe(a.code) + "</td><td>" + a.problem + "</td></tr>"),
+    "No alerts. Every scan so far was valid.");
+}
+
+/* ============================================================
+   5. ADMIN: sign in, register, remove
+   ============================================================ */
+let signedIn = false;
+
+$("loginBtn").onclick = function () {
+  if ($("pinBox").value === ADMIN_PIN) {
+    signedIn = true;
+    $("loginBox").style.display = "none";
+    $("adminBox").style.display = "block";
+    drawPeople();
+  } else {
+    $("pinMsg").textContent = "Wrong PIN. Try again.";
+  }
+  $("pinBox").value = "";
+};
+
+function drawPeople() {
+  $("peopleList").innerHTML = people.map(p =>
+    "<div class='card'><b>" + safe(p.name) + "</b><br>" +
+    "<span class='small'>" + (p.type === "student" ? "Student" : "Staff") + " | " + safe(p.grade) + "</span>" +
+    "<br>" +
+    "<span class='small'>ID " + safe(p.id) + "<br>" + (p.type === "student" ? "Parent: " + safe(p.parent) + "<br>" : "") + safe(p.phone) + "</span><br>" +
+    "<button class='go' onclick=\"removePerson('" + safe(p.id) + "')\">Remove</button></div>"
+  ).join("");
+}
+
+$("saveBtn").onclick = function () {
+  if (!signedIn) return;
+  const person = {
+    type:   $("fType").value,
+    id:     $("fId").value.trim(),
+    name:   $("fName").value.trim(),
+    grade:  $("fGrade").value.trim(),
+    parent: $("fParent").value.trim(),
+    phone:  $("fPhone").value.trim()
+  };
+
+  // Check the form before saving
+  if (!/^[0-9-]+$/.test(person.id))       { alert("ID number: digits and hyphens only."); return; }
+  if (!person.name || !person.grade || !person.phone) { alert("Please fill in all the fields."); return; }
+  if (person.type === "student" && !person.parent)    { alert("Students need a parent or guardian name."); return; }
+  if (people.some(p => p.id === person.id))           { alert("That ID number is already registered."); return; }
+
+  people.push(person);
+  saveAll();
+  drawPeople();
+  ["fId", "fName", "fGrade", "fParent", "fPhone"].forEach(id => $(id).value = "");
+};
+
+function removePerson(id) {
+  if (!signedIn || !confirm("Remove this person?")) return;
+  people = people.filter(p => p.id !== id);
+  saveAll();
+  drawPeople();
+}
+
+/* ============================================================
+   6. TABS
+   ============================================================ */
+document.querySelectorAll("nav button").forEach(btn => {
+  btn.onclick = function () {
+    document.querySelectorAll("nav button").forEach(b => b.classList.remove("active"));
+    document.querySelectorAll(".tab").forEach(t => t.classList.remove("show"));
+    btn.classList.add("active");
+    $(btn.dataset.tab).classList.add("show");
+    if (btn.dataset.tab === "scanTab") $("scanBox").focus();
+  };
+});
+
+drawTables();
+$("scanBox").focus();
+</script>
+</body>
+</html>

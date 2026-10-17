@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gate Check System</title>
+<style>
+  body {
+    background-color: #eef0f3;
+    color: green;
+    margin: 0;
+  }
+  header {
+    background-color: green;
+    color: #fff;
+    padding: 14px 20px;
+    border-bottom: 6px solid #f2a900;
+  }
+  header h1 {
+    margin: 0;
+    font-size: 1.2rem;
+  }
+  header p {
+    margin: 4px 0 0;
+    font-size: .9rem;
+    color: #d9dde6;
+  }
+  nav {
+    padding: 12px 16px 0;
+  }
+  nav button {
+    padding: 10px 16px;
+    border: 1px solid #ccc;
+    background: #ddd;
+    cursor: pointer;
+    font-size: 1rem;
+  }
+  nav button.active {
+    background: #fff;
+    font-weight: bold;
+    border-top: 3px solid #f2a900;
+  }
+  main {
+    background: #fff;
+    margin: 0 16px 24px;
+    padding: 20px;
+    max-width: 900px;
+    border: 1px solid #ccc;
+  }
+  .tab {
+    display: none;
+  }
+  .tab.show {
+    display: block;
+  }
+  input, select {
+    padding: 10px;
+    font-size: 1rem;
+    width: 100%;
+    box-sizing: border-box;
+    margin: 4px 0 12px;
+  }
+  button.go {
+    padding: 10px 18px;
+    font-size: 1rem;
+    background: green;
+    color: #fff;
+    border: 0;
+    cursor: pointer;
+    margin: 0 6px 6px 0;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 20px;
+    text-align: left;
+  }
+  th, td {
+    text-align: left;
+    padding: 8px;
+    border-bottom: 1px solid #ddd;
+  }
+  #result {
+    padding: 24px;
+    border-radius: 8px;
+    margin-top: 14px;
+    font-size: 1.1rem;
+    background: #eee;
+  }
+  .good {
+    background: #dff3ea;
+    color: #0f5c40;
+  }
+  .bad {
+    background: #fbe3e1;
+    color: #9b211b;
+  }
+  .warn {
+    background: #fff1cc;
+    color: #7a5200;
+  }
+  .small {
+    color: #555;
+    font-size: .9rem;
+  }
+  .logo img {
+    position: absolute;
+    width: 65px;
+    margin: 3px;
+    transform: translateX(190vh);
+  }
+</style>
+</head>
+<body>
+<div class="logo">
+    <img src="logo.png">
+</div>
+
+<header>
+    <h1>Gate Check: Student ID Verification</h1>
+    <p>CU Student ID Verification | Capitol University</p>
+</header>
+
+<nav>
+    <button class="active" data-tab="scanTab">Gate scanner</button>
+    <button data-tab="logTab">Attendance</button>
+    <button data-tab="alertTab">Messages and alerts</button>
+</nav>
+
+<main>
+
+    <!-- TAB 1: the guard scans / types the ID here -->
+    <section class="tab show" id="scanTab">
+        <label for="studentID"><b>Student ID Input</b></label>
+        <input type="text" id="studentID"
+               placeholder="Enter student number, then press Enter">
+
+        <button class="go" onclick="validateStudent()">Validate Student</button>
+        <p class="small">To test use 2026-0002 (active) or 2026-0003 (inactive) or official ID number 2094237 (active).
+           A valid scan records Time In and sends the parent message; a bad or repeated scan adds an alert.</p>
+
+        <div id="result">Waiting for student number...</div>
+    </section>
+
+    <!-- TAB 2: attendance -->
+    <section class="tab" id="logTab">
+
+        <p class="small" id="attMessage" role="status"></p>
+
+        <h3>Attendance Records</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Student ID</th>
+                    <th>Name</th>
+                    <th>Date</th>
+                    <th>Time In</th>
+                    <th>Time Out</th>
+                </tr>
+            </thead>
+            <tbody id="attendanceList"></tbody>
+        </table>
+        <button type="button" class="go" onclick="timeOutStudent()">Time Out</button>
+    </section>
+
+    <!-- TAB 3: messages to parents + alerts -->
+    <section class="tab" id="alertTab">
+        <h3>Messages Sent to Parents</h3>
+        <table id="messageTable">
+            <tbody>
+                <tr>
+                    <th>Time</th>
+                    <th>To</th>
+                    <th>Message</th>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3>Alerts for the guard and administrator</h3>
+
+        <button class="go" onclick="clearAlerts()">Clear All Alerts</button>
+
+        <p class="small" id="alertMessage"></p>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Time</th>
+                    <th>Scanned ID</th>
+                    <th>Problem</th>
+                </tr>   
+            </thead>
+            <tbody id="alertList"></tbody>
+        </table>
+    </section>
+
+</main>
+
+<script>
+
+var currentStudent = null;
+
+function validateStudent() {
+    var id = document.getElementById("studentID").value.trim();
+    var result = document.getElementById("result");
+
+    if (id == "") {
+        result.className = "";
+        result.innerHTML = "Please enter a student number.";
+    }
+    else if (id == "2094237") {
+        result.className = "good";
+        result.innerHTML =
+            "VALID STUDENT ID" +
+            "<br>Name: Cy J. Pamisa" +
+            "<br>Course: BSIT" +
+            "<br>Status: Active";
+        checkIn(id, "Cy J. Pamisa", "Ruel C. Pamisa", "0918 444 5566");
+    }
+    else if (id == "2026-0002") {
+        result.className = "good";
+        result.innerHTML =
+            "VALID STUDENT ID" +
+            "<br>Name: Maria Santos" +
+            "<br>Course: BSCS" +
+            "<br>Status: Active";
+        checkIn(id, "Maria Santos", "Elena Santos", "0917 111 2233");
+    }
+    else if (id == "2026-0003") {
+        result.className = "warn";
+        result.innerHTML =
+            "INACTIVE STUDENT RECORD" +
+            "<br>Name: Pedro Garcia" +
+            "<br>Course: BSIT" +
+            "<br>Status: Inactive";
+        currentStudent = null;
+        logAlert(id, "Inactive record");
+    }
+    else {
+        result.className = "bad";
+        result.innerHTML =
+            "INVALID STUDENT ID" +
+            "<br>Not registered. Do not admit." +
+            "<br>Guard and administrator alerted.";
+        currentStudent = null;
+        logAlert(id, "Not registered");
+    }
+    document.getElementById("studentID").value = "";
+}
+
+function checkIn(id, name, parentName, parentPhone) {
+    currentStudent = { id: id, name: name };
+
+    if (recordAttendance("Time In")) {
+        sendParentMessage(parentName, parentPhone, name);
+    } else {
+        var result = document.getElementById("result");
+        result.className = "warn";
+        result.innerHTML += "<br>Already checked in today. Alert added.";
+    }
+}
+
+
+function timeOutStudent() {
+    if (!currentStudent) {
+        document.getElementById("attMessage").textContent =
+            "Scan a valid student ID first.";
+        return;
+    }
+    recordAttendance("Time Out");
+}
+
+document.getElementById("studentID").addEventListener("keydown", function (e) {
+    if (e.key === "Enter") {
+        validateStudent();
+    }
+});
+
+function sendParentMessage(parentName, phoneNumb, studentName) {
+    const table = document.getElementById("messageTable");
+    const tbody = table.tBodies[0];
+
+    let row = tbody.insertRow();
+
+    let cell1 = row.insertCell(0);
+    let cell2 = row.insertCell(1);
+    let cell3 = row.insertCell(2);
+
+    let todayDate = new Date();
+    let todayHour = todayDate.getHours();
+
+    let hourGreeting;
+
+    if (todayHour >= 18) {
+        hourGreeting = "Evening";
+    } else if (todayHour >= 12) {
+        hourGreeting = "Afternoon";
+    } else {
+        hourGreeting = "Morning";
+    }
+
+    cell1.textContent = todayDate.toLocaleTimeString();
+    cell2.innerHTML = parentName + "<br>" + phoneNumb;
+    cell3.textContent = "Good " + hourGreeting + " " + parentName + ". " + studentName +
+        " safely entered the campus at " + todayDate.toLocaleTimeString();
+}
+
+// kirk
+let attendance = [];
+
+function recordAttendance(action) {
+    const message = document.getElementById("attMessage");
+    const studentId = currentStudent.id;
+    const studentName = currentStudent.name;
+
+    const now = new Date();
+    const date = [
+        now.getFullYear(),
+        String(now.getMonth() + 1).padStart(2, "0"),
+        String(now.getDate()).padStart(2, "0")
+    ].join("-");    
+    const time = now.toLocaleTimeString("en-US", {
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: true
+    });
+
+    let record = attendance.find(function (item) {
+        return item.studentId === studentId && item.date === date;
+    });
+
+    if (action === "Time In") {
+        if (record && record.timeIn !== "") {
+            message.textContent = "Already recorded time in today.";
+            logAlert(studentId, "Already checked in");
+            return false;
+        }
+        if (!record) {
+            record = {
+                studentId: studentId,
+                studentName: studentName,
+                date: date,
+                timeIn: time,
+                timeOut: ""
+            };
+            attendance.push(record);
+        } else {
+            record.timeIn = time;
+        }
+        message.textContent = "Time in recorded successfully.";
+
+    } else if (action === "Time Out") {
+        if (!record || record.timeIn === "") {
+            message.textContent = "Please record time in first.";
+            return false;
+        }
+        if (record.timeOut !== "") {
+            message.textContent = "Already recorded time out today.";
+            return false;
+        }
+        record.timeOut = time;
+        message.textContent = "Time out recorded successfully.";
+    }
+
+    displayAttendance();
+    return true;
+}
+
+function displayAttendance() {
+    const list = document.getElementById("attendanceList");
+    list.innerHTML = "";
+    attendance.forEach(function (record) {
+        const row = document.createElement("tr");
+
+        const values = [
+            record.studentId,
+            record.studentName,
+            record.date,
+            record.timeIn,
+            record.timeOut || "-"
+        ];
+
+        values.forEach(function (value) {
+            const cell = document.createElement("td");
+            cell.textContent = value;
+            row.appendChild(cell);
+        });
+        list.appendChild(row);
+    });
+}
+
+displayAttendance();
+
+function insertAlertRow(timeText, id, problem) {
+    var table = document.getElementById("alertList");
+    var row = table.insertRow(0);
+
+    row.insertCell(0).textContent = timeText;
+    row.insertCell(1).textContent = id;
+    row.insertCell(2).textContent = problem;
+}
+
+function logAlert(id, problem) {
+    var nowText = new Date().toLocaleTimeString("en-US", {
+        hour: "numeric",
+        minute: "2-digit"
+    });
+    insertAlertRow(nowText, id, problem);
+}
+
+function clearAlerts() {
+    var answer = confirm("Do you want to clear all alerts?");
+
+    if (answer == true) {
+        document.getElementById("alertList").innerHTML = "";
+        document.getElementById("alertMessage").innerHTML =
+            "All alerts cleared.";
+    }
+}
+
+document.querySelectorAll("nav button").forEach(function (btn) {
+    btn.onclick = function () {
+        document.querySelectorAll("nav button").forEach(function (b) { b.classList.remove("active"); });
+        document.querySelectorAll(".tab").forEach(function (t) { t.classList.remove("show"); });
+        btn.classList.add("active");
+        document.getElementById(btn.dataset.tab).classList.add("show");
+        if (btn.dataset.tab === "scanTab") {
+            document.getElementById("studentID").focus();
+        }
+    };
+});
+
+document.getElementById("studentID").focus();
+</script>
+</body>
+</html>

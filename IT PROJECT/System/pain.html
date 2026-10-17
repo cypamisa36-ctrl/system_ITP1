@@ -1,0 +1,183 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Attendance</title>
+
+    <style type="text/css">
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            padding: 30px 15px;
+            font-family: Arial, sans-serif;
+            background-color: #1769aa;
+            color: #222;
+        }
+
+        .container {
+            max-width: 850px;
+            margin: 30px auto;
+            padding: 25px;
+            background-color: white;
+            border-radius: 5px;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Student Attendance</h1>
+
+        <p class="subtitle">
+            Enter your information to record your attendance.
+        </p>
+
+        <div class="form-group">
+            <label for="studentId">Student ID</label>
+            <input type="text" id="studentId"
+                   placeholder="Enter your student ID">
+        </div>
+
+        <div class="form-group">
+            <label for="studentName">Student Name</label>
+            <input type="text" id="studentName"
+                   placeholder="Enter your full name">
+        </div>
+        <div class="buttons">
+            <button type="button" onclick="recordAttendance('Time In')">
+                Time In
+            </button>
+
+            <button type="button" onclick="recordAttendance('Time Out')">
+                Time Out
+            </button>
+        </div>
+        <p class="message" id="message" role="status"></p>
+        <h2>Attendance Records</h2>
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Student ID</th>
+                        <th>Name</th>
+                        <th>Date</th>
+                        <th>Time In</th>
+                        <th>Time Out</th>
+                    </tr>
+                </thead>
+                <tbody id="attendanceList"></tbody>
+            </table>
+        </div>
+        <button type="button" class="clear-button"
+                onclick="clearAttendance()">
+            Clear Records
+        </button>
+    </div>
+    <script>
+        let attendance = [];
+        function recordAttendance(action) {
+            const studentId = document.getElementById("studentId")
+                .value.trim();
+            const studentName = document.getElementById("studentName")
+                .value.trim();
+            const message = document.getElementById("message");
+            if (studentId === "" || studentName === "") {
+                message.textContent =
+                    "Please enter your student ID and name.";
+                return;
+            }
+            const now = new Date();
+            const date = [
+                now.getFullYear(),
+                String(now.getMonth() + 1).padStart(2, "0"),
+                String(now.getDate()).padStart(2, "0")
+            ].join("-");
+            const time = now.toLocaleTimeString("en-US", {
+                hour: "2-digit",
+                minute: "2-digit",
+                hour12: true
+            });
+            let record = attendance.find(function(item) {
+                return item.studentId === studentId &&
+                       item.date === date;
+            });
+            if (action === "Time In") {
+                if (record && record.timeIn !== "") {
+                    message.textContent =
+                        "You have already recorded your time in today.";
+                    return;
+                }
+                if (!record) {
+                    record = {
+                        studentId: studentId,
+                        studentName: studentName,
+                        date: date,
+                        timeIn: time,
+                        timeOut: ""
+                    };
+                    attendance.push(record);
+                } else {
+                    record.studentName = studentName;
+                    record.timeIn = time;
+                }
+
+                message.textContent =
+                    "Time in recorded successfully.";
+
+            } else if (action === "Time Out") {
+                if (!record || record.timeIn === "") {
+                    message.textContent =
+                        "Please record your time in first.";
+                    return;
+                }
+                if (record.timeOut !== "") {
+                    message.textContent =
+                        "You have already recorded your time out today.";
+                    return;
+                }
+                record.timeOut = time;
+                message.textContent =
+                    "Time out recorded successfully.";
+            }
+            displayAttendance();
+        }
+        function displayAttendance() {
+            const list = document.getElementById("attendanceList");
+            list.innerHTML = "";
+            attendance.forEach(function(record) {
+                const row = document.createElement("tr");
+
+                const values = [
+                    record.studentId,
+                    record.studentName,
+                    record.date,
+                    record.timeIn,
+                    record.timeOut || "-"
+                ];
+ 
+                values.forEach(function(value) {
+                    const cell = document.createElement("td");
+                    cell.textContent = value;
+                    row.appendChild(cell);
+                });
+                list.appendChild(row);
+            });
+        }
+        function clearAttendance() {
+            if (confirm("Are you sure you want to clear all records?")) {
+                attendance = [];
+                displayAttendance();
+                document.getElementById("message").textContent =
+                    "All attendance records have been cleared.";
+            }
+        }
+        displayAttendance();
+    </script>
+</body>
+</html>

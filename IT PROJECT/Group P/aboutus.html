@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+<title>About Us | Capitol University</title>
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+
+#cuu{
+	position: absolute;
+	width: 200px;
+	border-radius: 50%;
+	left: 100px;
+	top: 20px;
+	height: 200px;
+	object-fit: cover;
+	
+}
+
+#stat{
+	width: 200px;
+	position: absolute;
+	left: 730px;
+	top: 70px;
+	border-radius: 5px;
+	border: 5px solid green;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+	position: absolute;
+    font-family: Arial, sans-serif;
+    background-color: gray;
+    color: black;
+    min-height: 100vh;
+    position: relative;
+}
+
+
+.header {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 110px;
+    background-color: darkgreen;
+    color: white;
+    text-align: center;
+    padding: 25px;
+}
+
+.header h1 {
+    font-size: 28px;
+}
+
+.header p {
+    margin-top: 10px;
+}
+
+.banner {
+   	position: absolute;
+    top: 110px;
+    left: 0;
+    width: 100%;
+    background-color: green;
+    color: white;
+    text-align: center;
+    padding: 35px 20px;
+}
+
+.banner h2 {
+    font-size: 30px;
+    margin-bottom: 15px;
+}
+
+
+.container {
+    position: absolute;
+    top: 260px;
+    left: 150px;
+    width: 90%;
+    max-width: 1000px;
+    margin-bottom: 0;
+}
+
+
+.section {
+    position: relative;
+    width: 100%;
+    background-color: white;
+    padding: 25px;
+    margin-bottom: 20px;
+    border-left: 5px solid darkgreen;
+    border-right: 5px solid darkgreen;
+    border-radius: 5px;
+}
+
+.section h2 {
+    color: darkgreen;
+    margin-bottom: 15px;
+}
+
+.section p {
+    margin-bottom: 10px;
+    text-align: justify;
+}
+
+.section ul {
+    margin-left: 25px;
+}
+
+
+.mv {
+    position: relative;
+    display: flex;
+    gap: 20px;
+    width: 100%;
+    margin-bottom: 20px;
+}
+
+.card {
+    position: relative;
+    background-color: white;
+    padding: 25px;
+    flex: 1;
+    border-top: 4px solid darkgreen;
+    border-radius: 5px;
+}
+
+.card h2 {
+    color: darkgreen;
+    margin-bottom: 15px;
+}
+
+.card p {
+    text-align: justify;
+}
+
+
+.footer {
+    position: absolute;
+    top: 1600px;
+    left: 0;
+    width: 100%;
+    min-height: 120px;
+    background-color: darkgreen;
+    color: white;
+    text-align: center;
+    padding: 20px;
+}
+
+.footer p {
+    font-size: 14px;
+    margin-bottom: 8px;
+}
+
+
+@media screen and (max-width: 600px) {
+
+    .header {
+        height: 105px;
+    }
+
+    .header h1 {
+        font-size: 23px;
+    }
+
+    .banner {
+        top: 105px;
+    }
+
+    .banner h2 {
+        font-size: 25px;
+    }
+
+    .container {
+        top: 265px;
+        left: 4%;
+        width: 92%;
+    }
+
+    .mv {
+        flex-direction: column;
+    }
+
+    .section {
+        padding: 20px;
+    }
+
+    .footer {
+        top: 2100px;
+    }
+
+}
+
+/* .img {
+    
+} */
+
+</style>
+
+</head>
+
+<body>
+
+<div class="header">
+
+    <h1>CAPITOL UNIVERSITY</h1>
+
+    <p>Cagayan de Oro City, Philippines</p>
+
+</div>
+
+
+<div class="banner">
+
+    <h2>About Us</h2>
+
+    <p>
+        Learn about Capitol University and our Student
+        Attendance Tracking System.
+    </p>
+
+</div>
+
+
+<div class="img">
+	<img id="cuu" src="cuu.jpg">
+</div>
+
+<div class="container">
+
+    <div class="section">
+
+        <h2>University Background</h2>
+
+        <p>
+            Capitol University is a private, non-sectarian co-educational higher education institution<br>
+            located in Cagayan de Oro City, Philippines. Founded in 1971 by Madame Laureana San Pedro<br>
+            Rosales as Cagayan Capitol College, the institution originally offered basic secondary and<br>
+            tertiary programs before rapidly expanding into maritime, engineering, and nursing fields<br>
+            throughout the 1970s. The Commission on Higher Education (CHED) officially granted the<br>
+            institution university status in 2003, renaming it Capitol University. Today, it holds a<br>
+            prestigious Autonomous Status from CHED, with its College of Education recognized as a Center<br>
+            of Excellence and its information technology, criminology, and civil engineering programs<br>
+            designated as Centers of Development. The university also operates the Capitol University<br>
+            Medical Center, which serves as the primary base training hospital for its medical and nursing<br>
+            students.
+        </p>
+
+        <img id="stat" src="stat.jpg">
+    </div>
+
+    <div class="mv">
+
+        <div class="card">
+
+            <h2>Our Mission</h2>
+
+            <p>
+                Capitol University is commited on developing youths into "Total Persons"
+                mature and responsible individuals who are intellectualy, professionally,
+                and techincally competent. Imbued with desirable attitude, and stepped with moral
+                and spiritual values. who will serve as catalyst for social transformation.
+            </p>
+
+        </div>
+
+        <div class="card">
+
+            <h2>Our Vision</h2>
+
+            <p>
+                Excellent Accesible Education for an enchanced quality of life.
+            </p>
+
+        </div>
+
+    </div>
+
+    <div class="section">
+
+        <h2>Our Core Values</h2>
+
+        <ul>
+
+            <li>Character</li>
+            <li>Competence</li>
+            <li>Commitment</li>
+            <li>Culture</li>
+            <li>Care</li>
+
+        </ul>
+
+    </div>
+
+    <div class="section">
+
+        <h2>About Our System</h2>
+
+        <p>
+            The Student Attendance Tracking System is designed
+            to help organize and monitor student attendance
+            through a digital platform.
+        </p>
+
+        <p>
+           
+        </p>
+
+    </div>
+
+    <div class="section">
+
+        <h2>System Objectives</h2>
+
+        <ul>
+
+            <li>To record student attendance efficiently.</li>
+            <li>To provide organized attendance records.</li>
+            <li>To help authorized personnel monitor attendance.</li>
+
+        </ul>
+
+    </div>
+
+    <div class="section">
+
+        <h2>System Features</h2>
+
+        <ul>
+
+            <li>[STUDENT ID OR BARCODE VERIFICATION]</li>
+            <li>[ATTENDANCE RECORDING AND MONITORING]</li>
+            <li>[ATTENDANCE REPORTS]</li>
+            <li>[PARENT NOTIFICATIONS, IF IMPLEMENTED]</li>
+
+        </ul>
+
+    </div>
+
+</div>
+
+<div class="footer">
+
+    <p>Capitol University</p>
+
+    <p>Cagayan de Oro City, Philippines</p>
+
+    <p>Student Attendance Tracking System</p>
+
+    <p>Copyright 2026</p>
+
+</div>
+
+</body>
+</html>

@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Gate Check: Student ID Verification</title>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#eef0f3;--card:#fff;--ink:#14213d;--mute:#5b6478;--line:#d5d9e2;--gold:#f2a900;--ok:#17805a;--okbg:#dff3ea;--bad:#c8322b;--badbg:#fbe3e1;--warn:#946200;--warnbg:#fff1cc;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0e1424;--card:#172038;--ink:#eef1f8;--mute:#98a2ba;--line:#2c3757;--ok:#4fd39c;--okbg:#12362b;--bad:#ff7b73;--badbg:#3d1b1b;--warn:#ffcc55;--warnbg:#3b2f0e}}
+:root[data-theme="dark"]{--bg:#0e1424;--card:#172038;--ink:#eef1f8;--mute:#98a2ba;--line:#2c3757;--ok:#4fd39c;--okbg:#12362b;--bad:#ff7b73;--badbg:#3d1b1b;--warn:#ffcc55;--warnbg:#3b2f0e}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 16px/1.5 Archivo,system-ui,sans-serif}
+header{background:var(--ink);color:var(--bg);padding:14px 20px;display:flex;align-items:center;gap:12px;border-bottom:6px solid var(--gold)}
+header h1{margin:0;font-size:1.15rem;font-weight:800}
+header small{opacity:.75;margin-left:auto;text-align:right}
+nav{display:flex;gap:4px;padding:12px 16px 0;overflow-x:auto}
+nav button{font:600 .95rem Archivo,sans-serif;padding:10px 16px;border:1px solid var(--line);border-bottom:0;background:transparent;color:var(--mute);border-radius:8px 8px 0 0;cursor:pointer;white-space:nowrap}
+nav button[aria-selected=true]{background:var(--card);color:var(--ink);box-shadow:inset 0 3px var(--gold)}
+nav .n{background:var(--bad);color:#fff;border-radius:99px;padding:0 7px;margin-left:6px;font-size:.8rem}
+main{background:var(--card);margin:0 16px 24px;border:1px solid var(--line);border-radius:0 8px 8px 8px;padding:20px;max-width:1000px}
+.tab{display:none}.tab.on{display:block}
+.grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.2fr);gap:20px}
+@media(max-width:760px){.grid{grid-template-columns:1fr}}
+label{display:block;font-weight:600;margin:0 0 4px}
+input,select{font:inherit;width:100%;padding:12px;border:2px solid var(--line);border-radius:6px;background:var(--bg);color:var(--ink)}
+input:focus-visible,select:focus-visible,button:focus-visible{outline:3px solid var(--gold);outline-offset:1px}
+#scan{font-size:1.4rem;letter-spacing:.08em;padding:16px}
+.btn{font:600 1rem Archivo,sans-serif;padding:11px 18px;border:0;border-radius:6px;background:var(--ink);color:var(--bg);cursor:pointer}
+.btn.ghost{background:transparent;color:var(--ink);border:1px solid var(--line)}
+.hint{color:var(--mute);font-size:.9rem;margin:8px 0 0}
+.res{border-radius:10px;padding:22px;min-height:230px;border:2px solid var(--line);display:flex;flex-direction:column;justify-content:center}
+.res h2{margin:0 0 6px;font-size:2rem;font-weight:800;line-height:1.1}
+.res.ok{background:var(--okbg);border-color:var(--ok)}.res.ok h2{color:var(--ok)}
+.res.bad{background:var(--badbg);border-color:var(--bad)}.res.bad h2{color:var(--bad)}
+.res.warn{background:var(--warnbg);border-color:var(--warn)}.res.warn h2{color:var(--warn)}
+.res dl{margin:12px 0 0;display:grid;grid-template-columns:auto 1fr;gap:4px 14px}
+.res dt{color:var(--mute)}.res dd{margin:0;font-weight:600}
+.res.idle{color:var(--mute);text-align:center}
+.tblwrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:.95rem}
+th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+th{color:var(--mute);font-weight:600}
+h3{margin:22px 0 8px;font-size:1.05rem}
+.top{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.tag{display:inline-block;padding:1px 9px;border-radius:99px;font-size:.85rem;font-weight:600}
+.tag.bad{background:var(--badbg);color:var(--bad)}.tag.warn{background:var(--warnbg);color:var(--warn)}
+.tag.staff{background:var(--okbg);color:var(--ok)}.tag.stu{background:var(--line);color:var(--ink)}
+form.reg{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;align-items:end;margin-bottom:18px}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:12px}
+.id{border:1px solid var(--line);border-radius:8px;padding:12px;background:var(--bg)}
+.id b{display:block}.id span{color:var(--mute);font-size:.9rem;display:block}
+.id svg{width:100%;height:56px;margin:8px 0;background:#fff;border-radius:4px}
+.empty{color:var(--mute);padding:14px 0}
+</style>
+</head>
+<body>
+<header>
+  <h1>Gate Check</h1>
+  <small>Student ID verification<br><span id="clock"></span></small>
+</header>
+<nav role="tablist" id="tabs">
+  <button role="tab" data-t="gate" aria-selected="true">Gate scanner</button>
+  <button role="tab" data-t="log" aria-selected="false">Attendance</button>
+  <button role="tab" data-t="alerts" aria-selected="false">Admin alerts<span class="n" id="badge" hidden>0</span></button>
+  <button role="tab" data-t="students" aria-selected="false">Admin registry</button>
+</nav>
+<main>
+  <section class="tab on" id="gate">
+    <div class="grid">
+      <div>
+        <label for="scan">Scan student ID</label>
+        <form id="scanForm"><input id="scan" autocomplete="off" placeholder="Scan or type the ID number, then press Enter" autofocus></form>
+        <p class="hint">A USB barcode scanner types the number and presses Enter for you. Keep this box selected. To test, type a registered ID from the Students tab, or a fake one.</p>
+      </div>
+      <div class="res idle" id="res" aria-live="assertive">Waiting for the next student.</div>
+    </div>
+  </section>
+
+  <section class="tab" id="log">
+    <div class="top"><h3 style="margin:0">Today's arrivals</h3><button class="btn ghost" id="clearLog">Clear attendance</button></div>
+    <div class="tblwrap" id="attTbl"></div>
+    <h3>Messages sent to parents</h3>
+    <div class="tblwrap" id="msgTbl"></div>
+  </section>
+
+  <section class="tab" id="alerts">
+    <div class="top"><h3 style="margin:0">Alerts for guard and administrator</h3><button class="btn ghost" id="clearAlerts">Clear alerts</button></div>
+    <div class="tblwrap" id="alTbl"></div>
+  </section>
+
+  <section class="tab" id="students">
+    <div id="lock">
+      <h3 style="margin-top:0">Administrator sign-in</h3>
+      <form id="pinForm" style="max-width:320px"><label for="pin">Admin PIN</label><input id="pin" type="password" inputmode="numeric" autocomplete="off" required><p class="hint" id="pinMsg">Only administrators can register or remove people. The default PIN is 1234; change it after signing in.</p><button class="btn" type="submit" style="margin-top:10px">Sign in</button></form>
+    </div>
+    <div id="admin" hidden>
+      <div class="top"><h3 style="margin:0">Register a person</h3><span><button class="btn ghost" id="chPin">Change PIN</button> <button class="btn ghost" id="lockBtn">Sign out</button></span></div>
+      <form class="reg" id="regForm" style="margin-top:12px">
+        <div><label for="fType">Type</label><select id="fType"><option value="student">Student</option><option value="staff">Staff</option></select></div>
+        <div><label for="fId">ID number</label><input id="fId" required pattern="[0-9\-]+" placeholder="2026-0004" title="Digits and hyphens only"></div>
+        <div><label for="fName">Full name</label><input id="fName" required></div>
+        <div><label for="fGrade" id="lGrade">Grade / section</label><input id="fGrade" required></div>
+        <div class="sOnly"><label for="fParent">Parent or guardian</label><input id="fParent" required></div>
+        <div><label for="fPhone" id="lPhone">Parent mobile</label><input id="fPhone" required placeholder="0917 000 0000"></div>
+        <div><button class="btn" type="submit">Save</button></div>
+      </form>
+      <div class="top"><h3 style="margin:0">Registered people</h3><span style="display:flex;gap:8px;align-items:center"><select id="fFilter" aria-label="Show" style="width:auto"><option value="all">Everyone</option><option value="student">Students</option><option value="staff">Staff</option></select><button class="btn ghost" id="reset">Reset demo data</button></span></div>
+      <div class="cards" id="cards" style="margin-top:12px"></div>
+    </div>
+  </section>
+</main>
+
+<script>
+const $=s=>document.querySelector(s);
+const DEMO=[
+ {id:"2026-0001",name:"Maria Santos",grade:"Grade 10 - Rizal",parent:"Elena Santos",phone:"0917 111 2233"},
+ {id:"2026-0002",name:"Juan Dela Cruz",grade:"Grade 8 - Bonifacio",parent:"Pedro Dela Cruz",phone:"0918 444 5566"},
+ {id:"2026-0003",name:"Ana Reyes",grade:"Grade 12 - Luna",parent:"Carla Reyes",phone:"0919 777 8899"},
+ {type:"staff",id:"7001-001",name:"Rosa Mendoza",grade:"Teacher, Mathematics",parent:"",phone:"0920 123 4567"}
+];
+function load(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}}
+let S=load("sid_students",DEMO),A=load("sid_att",[]),AL=load("sid_alerts",[]),M=load("sid_msgs",[]);
+function save(){try{localStorage.setItem("sid_students",JSON.stringify(S));localStorage.setItem("sid_att",JSON.stringify(A));localStorage.setItem("sid_alerts",JSON.stringify(AL));localStorage.setItem("sid_msgs",JSON.stringify(M))}catch(e){}}
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const kind=s=>s.type||"student";
+const fmtT=t=>new Date(t).toLocaleTimeString([],{hour:"numeric",minute:"2-digit"});
+const day=t=>new Date(t).toDateString();
+
+/* Code 39 barcode (digits and hyphen). n = narrow, w = wide */
+const C39={"0":"nnnwwnwnn","1":"wnnwnnnnw","2":"nnwwnnnnw","3":"wnwwnnnnn","4":"nnnwwnnnw","5":"wnnwwnnnn","6":"nnwwwnnnn","7":"nnnwnnwnw","8":"wnnwnnwnn","9":"nnwwnnwnn","-":"nwnnnnwnw","*":"nwnnwnwnn"};
+function barcode(text){
+  let x=10,r="";
+  for(const ch of "*"+text+"*"){
+    const p=C39[ch];if(!p)continue;
+    for(let i=0;i<9;i++){const w=p[i]==="w"?3:1;if(i%2===0)r+=`<rect x="${x}" y="0" width="${w}" height="50" fill="#000"/>`;x+=w}
+    x+=1;
+  }
+  return `<svg viewBox="0 0 ${x+10} 50" preserveAspectRatio="none" role="img" aria-label="Barcode for ${esc(text)}">${r}</svg>`;
+}
+
+function beep(f,d){try{const c=new (window.AudioContext||window.webkitAudioContext)(),o=c.createOscillator();o.frequency.value=f;o.connect(c.destination);o.start();setTimeout(()=>{o.stop();c.close()},d)}catch(e){}}
+
+/* Sending is simulated here: the message is logged on screen.
+   To send real SMS, call an SMS provider's API from a server at this point. */
+function notifyParent(s,t){
+  const msg=`Good day, ${s.parent}. ${s.name} (${s.grade}) safely entered the campus at ${fmtT(t)}.`;
+  M.unshift({t,to:s.parent,phone:s.phone,msg});
+}
+
+function show(cls,title,rows){
+  const el=$("#res");el.className="res "+cls;
+  el.innerHTML=`<h2>${title}</h2>`+(rows?`<dl>${rows.map(r=>`<dt>${r[0]}</dt><dd>${esc(r[1])}</dd>`).join("")}</dl>`:"");
+}
+
+function scan(raw){
+  const code=raw.trim();if(!code)return;
+  const t=Date.now(),s=S.find(x=>x.id===code);
+  if(!s){
+    AL.unshift({t,code,type:"Not registered"});beep(180,500);
+    show("bad","Invalid ID. Do not admit.",[["Scanned",code],["Action","Guard and administrator alerted"]]);
+  }else{
+    const prev=A.find(a=>a.id===s.id&&day(a.t)===day(t));
+    if(prev){
+      AL.unshift({t,code,type:"Already checked in"});beep(300,350);
+      show("warn","Already checked in today",[["Name",s.name],["First scan",fmtT(prev.t)],["Action","Confirm identity with the guard"]]);
+    }else{
+      A.unshift({t,id:s.id,name:s.name,grade:s.grade,type:kind(s)});beep(880,150);
+      if(kind(s)==="staff")show("ok","Staff verified. Welcome in.",[["Name",s.name],["ID",s.id],["Position",s.grade],["Type","Staff"]]);
+      else{notifyParent(s,t);show("ok","Valid ID. Welcome in.",[["Student",s.name],["ID",s.id],["Grade",s.grade],["Parent",s.parent+" notified"]])}
+    }
+  }
+  save();render();
+}
+
+function table(head,rows,empty){
+  if(!rows.length)return `<p class="empty">${empty}</p>`;
+  return `<table><thead><tr>${head.map(h=>`<th>${h}</th>`).join("")}</tr></thead><tbody>${rows.join("")}</tbody></table>`;
+}
+function render(){
+  const today=A.filter(a=>day(a.t)===day(Date.now()));
+  $("#attTbl").innerHTML=table(["Time","Name","Type","ID","Grade / position"],today.map(a=>`<tr><td>${fmtT(a.t)}</td><td>${esc(a.name)}</td><td>${(a.type||"student")==="staff"?"Staff":"Student"}</td><td>${esc(a.id)}</td><td>${esc(a.grade)}</td></tr>`),"No arrivals recorded today.");
+  $("#msgTbl").innerHTML=table(["Time","To","Message"],M.map(m=>`<tr><td>${fmtT(m.t)}</td><td>${esc(m.to)}<br><small>${esc(m.phone)}</small></td><td>${esc(m.msg)}</td></tr>`),"No messages sent yet.");
+  $("#alTbl").innerHTML=table(["Time","Scanned ID","Problem"],AL.map(a=>`<tr><td>${new Date(a.t).toLocaleString([],{month:"short",day:"numeric",hour:"numeric",minute:"2-digit"})}</td><td>${esc(a.code)}</td><td><span class="tag ${a.type==="Not registered"?"bad":"warn"}">${a.type}</span></td></tr>`),"No alerts. Every scan so far has been valid.");
+  const b=$("#badge");b.hidden=!AL.length;b.textContent=AL.length;
+const f=$("#fFilter").value,list=S.filter(s=>f==="all"||kind(s)===f);
+  $("#cards").innerHTML=list.length?list.map(s=>{const st=kind(s)==="student";return `<div class="id"><b>${esc(s.name)}</b><span class="tag ${st?"stu":"staff"}" style="width:fit-content">${st?"Student":"Staff"}</span><span>${esc(s.grade)}</span>${barcode(s.id)}<span>ID ${esc(s.id)}</span><span>${st?"Parent: "+esc(s.parent)+", ":"Mobile: "}${esc(s.phone)}</span><button class="btn ghost" style="margin-top:8px" data-del="${esc(s.id)}">Remove</button></div>`}).join(""):`<p class="empty">Nobody registered here yet.</p>`;
+}
+
+/* events */
+$("#scanForm").addEventListener("submit",e=>{e.preventDefault();const i=$("#scan");scan(i.value);i.value="";i.focus()});
+$("#tabs").addEventListener("click",e=>{
+  const b=e.target.closest("button[data-t]");if(!b)return;
+  document.querySelectorAll("#tabs button").forEach(x=>x.setAttribute("aria-selected",x===b));
+  document.querySelectorAll(".tab").forEach(x=>x.classList.toggle("on",x.id===b.dataset.t));
+  if(b.dataset.t==="gate")$("#scan").focus();
+});
+let unlocked=false;
+const getPin=()=>{try{return localStorage.getItem("sid_pin")||"1234"}catch(e){return "1234"}};
+function applyLock(){$("#lock").hidden=unlocked;$("#admin").hidden=!unlocked}
+function needAdmin(){if(unlocked)return true;alert("Administrators only. Sign in on the Admin registry tab first.");return false}
+function setType(){const st=$("#fType").value==="student";document.querySelector(".sOnly").hidden=!st;$("#fParent").required=st;$("#lGrade").textContent=st?"Grade / section":"Position / department";$("#lPhone").textContent=st?"Parent mobile":"Staff mobile"}
+$("#pinForm").addEventListener("submit",e=>{e.preventDefault();const p=$("#pin"),m=$("#pinMsg");if(p.value===getPin()){unlocked=true;applyLock()}else{m.textContent="Wrong PIN. Try again.";m.style.color="var(--bad)"}p.value=""});
+$("#lockBtn").onclick=()=>{unlocked=false;applyLock()};
+$("#chPin").onclick=()=>{const p=prompt("New PIN (at least 4 digits):");if(p&&/^\d{4,}$/.test(p)){try{localStorage.setItem("sid_pin",p)}catch(e){}alert("PIN changed.")}else if(p!==null)alert("The PIN must be at least 4 digits.")};
+$("#fType").onchange=setType;$("#fFilter").onchange=render;
+$("#regForm").addEventListener("submit",e=>{
+  e.preventDefault();if(!needAdmin())return;
+  const id=$("#fId").value.trim(),st=$("#fType").value==="student";
+  if(S.some(s=>s.id===id)){alert("That ID number is already registered.");return}
+  S.push({type:$("#fType").value,id,name:$("#fName").value.trim(),grade:$("#fGrade").value.trim(),parent:st?$("#fParent").value.trim():"",phone:$("#fPhone").value.trim()});
+  e.target.reset();setType();save();render();
+});
+$("#cards").addEventListener("click",e=>{const id=e.target.dataset.del;if(id&&needAdmin()&&confirm("Remove this person?")){S=S.filter(s=>s.id!==id);save();render()}});
+$("#clearLog").onclick=()=>{if(needAdmin()&&confirm("Clear all attendance and messages?")){A=[];M=[];save();render()}};
+$("#clearAlerts").onclick=()=>{if(needAdmin()){AL=[];save();render()}};
+$("#reset").onclick=()=>{if(needAdmin()&&confirm("Restore the demo people and clear all records?")){S=JSON.parse(JSON.stringify(DEMO));A=[];AL=[];M=[];save();render()}};
+applyLock();setType();
+setInterval(()=>{$("#clock").textContent=new Date().toLocaleString([],{weekday:"short",hour:"numeric",minute:"2-digit"})},1000);
+$("#clock").textContent=new Date().toLocaleString([],{weekday:"short",hour:"numeric",minute:"2-digit"});
+render();
+</script>
+</body>
+</html>
